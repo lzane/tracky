@@ -1,0 +1,6 @@
+*.mp4
+*.mov
+venv
+/.idea
+/darkflow1
+darkflow
