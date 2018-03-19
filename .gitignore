@@ -2,5 +2,4 @@
 *.mov
 venv
 /.idea
-/darkflow1
-darkflow
+__pycache__
