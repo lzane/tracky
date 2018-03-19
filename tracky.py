@@ -1,13 +1,18 @@
 import cv2
+import sys
 
+from SiamFC.SiameseTracker import SiameseTracker
 from darkflow.net.build import TFNet
 
-cap = cv2.VideoCapture('./t2.mov')
+cap = cv2.VideoCapture(sys.argv[1])
+# cap = cv2.VideoCapture(0)
 
-options = {"model": "./cfg/tiny-yolo-voc.cfg", "load": "./tiny-yolo-voc.weights", "threshold": 0.1}
-tracker_type = 'GOTURN'
+options = {"model": "./cfg/tiny-yolo-voc.cfg", "load": "./tiny-yolo-voc.weights", "threshold": 0.3}
+# options = {"model": "./cfg/yolo.cfg", "load": "./yolo.weights", "threshold": 0.3}
+tracker_type = 'KCF'
 
 tfnet = TFNet(options)
+siamFC = SiameseTracker()
 is_target_exist = False
 cnt = 0
 
@@ -34,21 +39,12 @@ while (True):
     frame = cv2.resize(frame, (600, 400))
 
     if is_target_exist:
-        ok, bbox = tracker.update(frame)
+        # ok, bbox = tracker.update(frame)
+        bbox = siamFC.track(frame)
         # Draw bounding box
-        if ok:
-            # Tracking success
-            p1 = (int(bbox[0]), int(bbox[1]))
-            p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
-            cv2.rectangle(frame, p1, p2, (255, 0, 0), 2, 1)
-        else:
-            # Tracking failure
-            cv2.putText(frame, "Tracking failure detected", (100, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
-            cnt += 1
-            if cnt == 5:
-                is_target_exist = False
-                cnt = 0
-
+        p1 = (int(bbox[0]), int(bbox[1]))
+        p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+        cv2.rectangle(frame, p1, p2, (255, 0, 0), 2, 1)
 
     else:
         results = tfnet.return_predict(frame) if not is_target_exist else []
@@ -69,8 +65,9 @@ while (True):
                     res['bottomright']['y'] - res['topleft']['y'])
             # bbox = cv2.selectROI(frame, False)
             is_target_exist = True
-            tracker = get_tracker(tracker_type)
-            ok = tracker.init(frame, bbox)
+            # tracker = get_tracker(tracker_type)
+            # ok = tracker.init(frame, bbox)
+            ok = siamFC.set_first_frame(frame, bbox)
             print(res)
             cv2.rectangle(frame, (res['topleft']['x'], res['topleft']['y']),
                           (res['bottomright']['x'], res['bottomright']['y']),
