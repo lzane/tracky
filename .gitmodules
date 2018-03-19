@@ -1,0 +1,3 @@
+[submodule "SiamFC"]
+      path = SiamFC
+      url = git@github.com:lzane/SiamFC-TensorFlow.git
