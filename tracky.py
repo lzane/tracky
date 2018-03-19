@@ -2,12 +2,12 @@ import cv2
 import sys
 
 from SiamFC.SiameseTracker import SiameseTracker
-from darkflow.net.build import TFNet
+from darkflow.darkflow.net.build import TFNet
 
 cap = cv2.VideoCapture(sys.argv[1])
 # cap = cv2.VideoCapture(0)
 
-options = {"model": "./cfg/tiny-yolo-voc.cfg", "load": "./tiny-yolo-voc.weights", "threshold": 0.3}
+options = {"model": "./darkflow/cfg/tiny-yolo-voc.cfg", "load": "./darkflow/tiny-yolo-voc.weights", "threshold": 0.3}
 # options = {"model": "./cfg/yolo.cfg", "load": "./yolo.weights", "threshold": 0.3}
 tracker_type = 'KCF'
 
