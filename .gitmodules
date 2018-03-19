@@ -1,3 +1,6 @@
 [submodule "SiamFC"]
       path = SiamFC
       url = git@github.com:lzane/SiamFC-TensorFlow.git
+[submodule "darkflow"]
+	path = darkflow
+	url = git@github.com:lzane/darkflow.git
