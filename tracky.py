@@ -1,5 +1,11 @@
-import cv2
+import datetime
+import os.path as osp
 import sys
+
+import cv2
+
+CURRENT_DIR = osp.dirname(__file__)
+sys.path.append(CURRENT_DIR)
 
 from SiamFC.SiameseTracker import SiameseTracker
 from darkflow.darkflow.net.build import TFNet
@@ -12,9 +18,11 @@ options = {"model": "./darkflow/cfg/tiny-yolo-voc.cfg", "load": "./darkflow/tiny
 tracker_type = 'KCF'
 
 tfnet = TFNet(options)
-siamFC = SiameseTracker()
+siamFC = SiameseTracker(debug=0,
+                        checkpoint='SiamFC/Logs/SiamFC/track_model_checkpoints/SiamFC-3s-color-pretrained')
 is_target_exist = False
 cnt = 0
+time_per_frame = 0
 
 
 def get_tracker(tracker_type):
@@ -33,10 +41,22 @@ def get_tracker(tracker_type):
     return tracker
 
 
+def preprocess(img):
+    res = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    return res
+    # return cv2.resize(img, (800, 600))
+
+
+def postprocess(img):
+    res = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    return res
+
+
 while (True):
     # Capture frame-by-frame
     ret, frame = cap.read()
-    frame = cv2.resize(frame, (600, 400))
+    frame = preprocess(frame)
+    start_time = datetime.datetime.now()
 
     if is_target_exist:
         # ok, bbox = tracker.update(frame)
@@ -76,7 +96,13 @@ while (True):
                         (res['topleft']['x'], res['topleft']['y'] - 12),
                         0, 1, (0, 0, 255), 1)
 
-    cv2.imshow('tracky', frame)
+    end_time = datetime.datetime.now()
+    duration = end_time - start_time
+    time_per_frame = 0.9 * time_per_frame + 0.1 * duration.microseconds
+    cv2.putText(frame, 'FPS ' + str(round(1e6 / time_per_frame, 1)),
+                (30, 50), 0, 1, (0, 0, 255), 3)
+
+    cv2.imshow('tracky', postprocess(frame))
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
     elif cv2.waitKey(1) & 0xFF == ord('c'):
